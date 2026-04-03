@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+mapfile -t staged_python_files < <(git diff --cached --name-only --diff-filter=ACMR -- '*.py')
+relative_python_files=()
+
+for file in "${staged_python_files[@]}"; do
+    case "$file" in
+        apps/api/*)
+            relative_python_files+=("${file#apps/api/}")
+            ;;
+    esac
+done
+
+if [ "${#relative_python_files[@]}" -eq 0 ]; then
+    exit 0
+fi
+
+(
+    cd apps/api
+    uv run ruff format "${relative_python_files[@]}"
+    uv run ruff check --fix "${relative_python_files[@]}"
+)
+
+git add "${staged_python_files[@]}"
