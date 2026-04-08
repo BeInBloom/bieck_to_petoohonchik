@@ -1,16 +1,11 @@
-from typing import Annotated, Protocol
+from typing import Annotated
 
 from litestar import Controller, get
 from litestar.exceptions import NotFoundException
 from litestar.params import Dependency
 
-from app.domain import Category
 from app.http.schemas import CategoryRead
-
-
-class _CategoryService(Protocol):
-    async def list_categories(self) -> list[Category]: ...
-    async def get_category(self, slug: str) -> Category | None: ...
+from app.services.category_service import CategoryServiceContract
 
 
 class CategoriesController(Controller):
@@ -19,7 +14,7 @@ class CategoriesController(Controller):
     @get()
     async def list_categories(
         self,
-        category_service: Annotated[_CategoryService, Dependency(skip_validation=True)],
+        category_service: Annotated[CategoryServiceContract, Dependency(skip_validation=True)],
     ) -> list[CategoryRead]:
         categories = await category_service.list_categories()
         return CategoryRead.validate_list(categories)
@@ -28,7 +23,7 @@ class CategoriesController(Controller):
     async def get_category(
         self,
         slug: str,
-        category_service: Annotated[_CategoryService, Dependency(skip_validation=True)],
+        category_service: Annotated[CategoryServiceContract, Dependency(skip_validation=True)],
     ) -> CategoryRead:
         category = await category_service.get_category(slug)
 

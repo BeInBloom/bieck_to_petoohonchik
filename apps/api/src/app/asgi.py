@@ -1,3 +1,5 @@
+from typing import Sequence
+
 from advanced_alchemy.extensions.litestar import (
     AsyncSessionConfig,
     SQLAlchemyAsyncConfig,
@@ -5,24 +7,32 @@ from advanced_alchemy.extensions.litestar import (
 )
 from litestar import Litestar
 from litestar.di import Provide
+from litestar.types import ControllerRouterHandler
 
 from app.config import Settings
-from app.http.controllers import AdsController, CategoriesController, HealthController
+from app.http.controllers import (
+    AdsController,
+    AuthController,
+    CategoriesController,
+    HealthController,
+)
 from app.http.providers import (
-    provide_ad_repository,
-    provide_ad_service,
-    provide_category_repository,
-    provide_category_service,
+    get_ad_dependencies,
+    get_auth_dependencies,
+    get_category_dependencies,
 )
 
 
 def get_dependencies() -> dict[str, Provide]:
     return {
-        "category_repository": Provide(provide_category_repository),
-        "category_service": Provide(provide_category_service),
-        "ad_repository": Provide(provide_ad_repository),
-        "ad_service": Provide(provide_ad_service),
+        **get_category_dependencies(),
+        **get_ad_dependencies(),
+        **get_auth_dependencies(),
     }
+
+
+def get_handlers() -> Sequence[ControllerRouterHandler]:
+    return [HealthController, CategoriesController, AdsController, AuthController]
 
 
 def create_app() -> Litestar:
@@ -40,7 +50,7 @@ def create_app() -> Litestar:
     alchemy = SQLAlchemyPlugin(config=alchemy_config)
 
     app = Litestar(
-        route_handlers=[HealthController, CategoriesController, AdsController],
+        route_handlers=get_handlers(),
         plugins=[alchemy],
         dependencies=get_dependencies(),
     )

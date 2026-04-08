@@ -1,28 +1,15 @@
-from typing import Annotated, Protocol
+from typing import Annotated
 
 from litestar import Controller, get, post
 from litestar.exceptions import NotFoundException
 from litestar.params import Dependency, Parameter
 from litestar.status_codes import HTTP_201_CREATED
 
-from app.domain import Ad
+from app.domain import User
 from app.http.schemas import AdRead, AdsPageRead
 from app.http.schemas.ad import AdCreate, AdCreated
+from app.services.ad_service import AdServiceContract
 from app.services.exceptions import CategoryNotFoundError
-from app.services.models import AdsPage
-
-
-class _AdService(Protocol):
-    async def get_ad(self, id: int) -> Ad | None: ...
-    async def list_ads(self, limit: int, offset: int) -> AdsPage: ...
-    async def create_ad(
-        self,
-        *,
-        title: str,
-        description: str,
-        price_minor: int,
-        category_id: int,
-    ) -> int: ...
 
 
 class AdsController(Controller):
@@ -31,7 +18,7 @@ class AdsController(Controller):
     @get()
     async def list_ads(
         self,
-        ad_service: Annotated[_AdService, Dependency(skip_validation=True)],
+        ad_service: Annotated[AdServiceContract, Dependency(skip_validation=True)],
         limit: Annotated[int, Parameter(ge=1, le=100)] = 20,
         offset: Annotated[int, Parameter(ge=0)] = 0,
     ) -> AdsPageRead:
@@ -48,7 +35,7 @@ class AdsController(Controller):
     async def get_ad(
         self,
         id: int,
-        ad_service: Annotated[_AdService, Dependency(skip_validation=True)],
+        ad_service: Annotated[AdServiceContract, Dependency(skip_validation=True)],
     ) -> AdRead:
         ad = await ad_service.get_ad(id)
 
@@ -61,7 +48,8 @@ class AdsController(Controller):
     async def post_ad(
         self,
         data: AdCreate,
-        ad_service: Annotated[_AdService, Dependency(skip_validation=True)],
+        ad_service: Annotated[AdServiceContract, Dependency(skip_validation=True)],
+        required_current_user: Annotated[User, Dependency(skip_validation=True)],
     ) -> AdCreated:
         try:
             id = await ad_service.create_ad(
@@ -69,8 +57,9 @@ class AdsController(Controller):
                 description=data.description,
                 price_minor=data.price_minor,
                 category_id=data.category_id,
+                owner_id=required_current_user.id,
             )
-        except CategoryNotFoundError as exc:
-            raise NotFoundException("category not found") from exc
+        except CategoryNotFoundError:
+            raise NotFoundException("category not found")
 
         return AdCreated(status="ok", id=id)

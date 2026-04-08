@@ -9,6 +9,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.domain.ad import Ad
+    from app.domain.session import Session
 
 
 class UserRole(StrEnum):
@@ -63,3 +64,5 @@ class User(Base):
         onupdate=func.now(),
     )
     ads: Mapped[list["Ad"]] = relationship(back_populates="owner")
+
+    sessions: Mapped[list["Session"]] = relationship(back_populates="user")

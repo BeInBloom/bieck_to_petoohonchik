@@ -1,10 +1,23 @@
+from abc import ABC, abstractmethod
+
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain import Category
 
 
-class CategoryRepository:
+class CategoryRepositoryContract(ABC):
+    @abstractmethod
+    async def list_categories(self) -> list[Category]: ...
+
+    @abstractmethod
+    async def get_category(self, slug: str) -> Category | None: ...
+
+    @abstractmethod
+    async def get_category_by_id(self, id: int) -> Category | None: ...
+
+
+class CategoryRepository(CategoryRepositoryContract):
     def __init__(self, db_session: AsyncSession) -> None:
         self._db_session = db_session
 

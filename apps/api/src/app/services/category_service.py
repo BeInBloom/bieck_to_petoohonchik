@@ -1,15 +1,19 @@
-from typing import Protocol
+from abc import ABC, abstractmethod
 
 from app.domain import Category
+from app.repositories.category_repository import CategoryRepositoryContract
 
 
-class _CategoryRepository(Protocol):
+class CategoryServiceContract(ABC):
+    @abstractmethod
     async def list_categories(self) -> list[Category]: ...
+
+    @abstractmethod
     async def get_category(self, slug: str) -> Category | None: ...
 
 
-class CategoryService:
-    def __init__(self, category_repo: _CategoryRepository) -> None:
+class CategoryService(CategoryServiceContract):
+    def __init__(self, category_repo: CategoryRepositoryContract) -> None:
         self._category_repo = category_repo
 
     async def list_categories(self) -> list[Category]:

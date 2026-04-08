@@ -1,3 +1,5 @@
+from abc import ABC, abstractmethod
+
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -5,7 +7,26 @@ from app.domain import Ad
 from app.services.models import AdsPage
 
 
-class AdRepository:
+class AdRepositoryContract(ABC):
+    @abstractmethod
+    async def get_ad(self, id: int) -> Ad | None: ...
+
+    @abstractmethod
+    async def list_ads(self, limit: int, offset: int) -> AdsPage: ...
+
+    @abstractmethod
+    async def create_ad(
+        self,
+        *,
+        title: str,
+        description: str,
+        price_minor: int,
+        category_id: int,
+        owner_id: int,
+    ) -> int: ...
+
+
+class AdRepository(AdRepositoryContract):
     def __init__(self, db_session: AsyncSession) -> None:
         self._db_session = db_session
 
@@ -43,12 +64,14 @@ class AdRepository:
         description: str,
         price_minor: int,
         category_id: int,
+        owner_id: int,
     ) -> int:
         ad = Ad(
             title=title,
             description=description,
             price_minor=price_minor,
             category_id=category_id,
+            owner_id=owner_id,
         )
 
         self._db_session.add(ad)
