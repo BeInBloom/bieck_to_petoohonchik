@@ -1,4 +1,3 @@
-from typing import Sequence
 
 from advanced_alchemy.extensions.litestar import (
     AsyncSessionConfig,
@@ -31,7 +30,7 @@ def get_dependencies() -> dict[str, Provide]:
     }
 
 
-def get_handlers() -> Sequence[ControllerRouterHandler]:
+def get_handlers() -> list[ControllerRouterHandler]:
     return [HealthController, CategoriesController, AdsController, AuthController]
 
 

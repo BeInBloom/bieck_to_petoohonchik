@@ -4,7 +4,12 @@ from litestar import Controller, Request, Response, get, post
 from litestar.datastructures.cookie import Cookie
 from litestar.exceptions import ClientException, NotAuthorizedException
 from litestar.params import Dependency
-from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED, HTTP_204_NO_CONTENT
+from litestar.status_codes import (
+    HTTP_200_OK,
+    HTTP_201_CREATED,
+    HTTP_204_NO_CONTENT,
+    HTTP_409_CONFLICT,
+)
 
 from app.domain import User
 from app.http.schemas.auth import AuthResponse, LoginRequest, RegisterRequest, UserRead
@@ -35,7 +40,7 @@ class AuthController(Controller):
                 password=data.password,
             )
         except UserAlreadyExistsError:
-            raise ClientException("user already exists", status_code=409)
+            raise ClientException("user already exists", status_code=HTTP_409_CONFLICT)
 
         return Response(
             AuthResponse(user=UserRead.validate_value(result.user)),
