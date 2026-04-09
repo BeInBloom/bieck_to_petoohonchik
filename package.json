@@ -1,0 +1,16 @@
+{
+  "name": "pets",
+  "private": true,
+  "packageManager": "bun@1.3.11",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "web:dev": "bun run --filter @pets/web dev",
+    "web:check": "bun run --filter @pets/web check",
+    "web:build": "bun run --filter @pets/web build",
+    "web:test": "bun run --filter @pets/web test",
+    "types:generate": "bun run --filter @pets/api-types generate"
+  }
+}

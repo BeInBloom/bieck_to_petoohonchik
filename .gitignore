@@ -10,3 +10,11 @@ wheels/
 .venv
 
 reference/
+
+#for monorepo
+node_modules/
+apps/web/.svelte-kit/
+apps/web/build/
+apps/web/dist/
+playwright-report/
+test-results

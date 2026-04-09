@@ -15,7 +15,7 @@
 
 Решения, уже подтвержденные как контекст:
 
-- frontend workspace управляется через `pnpm workspace`;
+- frontend workspace управляется через `bun workspaces`;
 - единая оболочка команд делается через `Makefile`;
 - стартовая локальная infra для `v1`: `postgres + mailpit + minio`.
 
@@ -135,9 +135,9 @@ Shared package для типов, сгенерированных из OpenAPI.
 
 ### Frontend side
 
-- frontend живет как `pnpm workspace`;
+- frontend живет как `bun` workspace;
 - `apps/web` и `packages/api-types` находятся в одном Node-контуре;
-- все frontend-команды должны быть воспроизводимы через `pnpm`.
+- все frontend-команды должны быть воспроизводимы через `bun`.
 
 ### Корневой уровень
 
@@ -416,7 +416,7 @@ apps/web/
 
 - структура репозитория утверждена и реализована;
 - новый код отделен от `reference/`;
-- `pnpm workspace` для frontend-части настроен;
+- `bun` workspace для frontend-части настроен;
 - `Makefile` покрывает типовые команды;
 - `postgres`, `mailpit` и `minio` поднимаются локально;
 - переменные окружения описаны и понятны;

@@ -1,0 +1,9 @@
+{
+  "name": "@pets/api-types",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "generate": "openapi-typescript http://127.0.0.1:8000/schema/openapi.json -o src/generated.ts"
+  }
+}
