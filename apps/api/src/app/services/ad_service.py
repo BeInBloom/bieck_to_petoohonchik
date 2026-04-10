@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from sqlalchemy.exc import IntegrityError
+
 from app.domain import Ad
 from app.repositories.ad_repository import AdRepositoryContract
 from app.repositories.category_repository import CategoryRepositoryContract
@@ -55,10 +57,13 @@ class AdService(AdServiceContract):
         if category is None:
             raise CategoryNotFoundError
 
-        return await self._ad_repo.create_ad(
-            title=title,
-            description=description,
-            price_minor=price_minor,
-            category_id=category_id,
-            owner_id=owner_id,
-        )
+        try:
+            return await self._ad_repo.create_ad(
+                title=title,
+                description=description,
+                price_minor=price_minor,
+                category_id=category_id,
+                owner_id=owner_id,
+            )
+        except IntegrityError:
+            raise CategoryNotFoundError

@@ -1,6 +1,7 @@
 from unittest.mock import AsyncMock
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from app.domain import Category
 from app.services.ad_service import AdService
@@ -56,3 +57,38 @@ async def test_create_ad_raises_when_category_missing_and_does_not_create_ad() -
 
     category_repository.get_category_by_id.assert_awaited_once_with(999)
     ad_repository.create_ad.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_create_ad_raises_when_insert_hits_integrity_error() -> None:
+    ad_repository = AsyncMock()
+    ad_repository.create_ad.side_effect = IntegrityError(
+        "INSERT INTO ad (...) VALUES (...)",
+        {"category_id": 5},
+        Exception("foreign key constraint failed"),
+    )
+    category_repository = AsyncMock()
+    category_repository.get_category_by_id.return_value = Category(
+        id=5,
+        name="Dogs",
+        slug="dogs",
+    )
+    service = AdService(ad_repository, category_repository)
+
+    with pytest.raises(CategoryNotFoundError):
+        await service.create_ad(
+            title="Puppy",
+            description="Healthy puppy",
+            price_minor=150_000,
+            category_id=5,
+            owner_id=23,
+        )
+
+    category_repository.get_category_by_id.assert_awaited_once_with(5)
+    ad_repository.create_ad.assert_awaited_once_with(
+        title="Puppy",
+        description="Healthy puppy",
+        price_minor=150_000,
+        category_id=5,
+        owner_id=23,
+    )

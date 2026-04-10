@@ -6,7 +6,6 @@ from app.security.password_hasher import PasswordHasher
 from app.services.exceptions import (
     InactiveUserError,
     InvalidCredentialsError,
-    UserAlreadyExistsError,
 )
 from app.services.models import AuthResult
 from app.services.session_service import SessionServiceContract
@@ -55,18 +54,12 @@ class AuthService(AuthServiceContract):
         display_name: str,
         password: str,
     ) -> AuthResult:
-        existing_user = await self._user_repo.get_user_by_email(email)
-
-        if existing_user is not None:
-            raise UserAlreadyExistsError()
-
         user = await self._user_repo.create_user(
             email=email,
             display_name=display_name,
             password_hash=self._password_hasher.hash(password),
         )
         session_token = await self._session_service.create_for_user(user.id)
-
         return AuthResult(user=user, session_token=session_token)
 
     async def login(
@@ -78,6 +71,7 @@ class AuthService(AuthServiceContract):
         user = await self._user_repo.get_user_by_email(email)
         user = self._ensure_user_can_login(user, password)
         session_token = await self._session_service.create_for_user(user.id)
+
         return AuthResult(user=user, session_token=session_token)
 
     async def logout(self, raw_session_token: str) -> None:

@@ -1,9 +1,11 @@
 from abc import ABC, abstractmethod
 
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain import User, UserRole
+from app.services.exceptions import UserAlreadyExistsError
 
 
 class UserRepositoryContract(ABC):
@@ -53,5 +55,9 @@ class UserRepository(UserRepositoryContract):
             role=role,
         )
         self._db_session.add(user)
-        await self._db_session.flush()
+        try:
+            await self._db_session.flush()
+        except IntegrityError:
+            raise UserAlreadyExistsError()
+
         return user

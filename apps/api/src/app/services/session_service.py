@@ -46,14 +46,9 @@ class SessionService(SessionServiceContract):
         return raw_token
 
     async def get_active_session(self, raw_token: str) -> Session | None:
-        session = await self._session_repo.get_session_by_token_hash(
+        return await self._session_repo.get_active_session_by_token_hash(
             self._token_hasher.hash(raw_token)
         )
-
-        if not self._is_active_session(session):
-            return None
-
-        return session
 
     async def get_active_user_id(self, raw_token: str) -> int | None:
         session = await self.get_active_session(raw_token)
@@ -64,29 +59,10 @@ class SessionService(SessionServiceContract):
         return session.user_id
 
     async def revoke_by_token(self, raw_token: str) -> None:
-        session = await self._session_repo.get_session_by_token_hash(
-            self._token_hasher.hash(raw_token)
+        await self._session_repo.revoke_session_by_token_hash(
+            self._token_hasher.hash(raw_token),
+            self._now(),
         )
-
-        if session is None or session.revoked_at is not None:
-            return
-
-        await self._session_repo.revoke_session(session.id, self._now())
 
     def _now(self) -> datetime:
         return datetime.now(timezone.utc)
-
-    def _is_active_session(self, session: Session | None) -> bool:
-        if session is None:
-            return False
-
-        if session.revoked_at is not None:
-            return False
-
-        return self._normalize_datetime(session.expires_at) > self._now()
-
-    def _normalize_datetime(self, value: datetime) -> datetime:
-        if value.tzinfo is None:
-            return value.replace(tzinfo=timezone.utc)
-
-        return value.astimezone(timezone.utc)

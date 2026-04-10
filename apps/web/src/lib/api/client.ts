@@ -29,7 +29,7 @@ export class ApiClient {
 	#fetch: typeof fetch;
 
 	constructor(option: ApiClientOption = {}) {
-		this.#baseUrl = option.baseUrl ?? 'api';
+		this.#baseUrl = option.baseUrl ?? '/api';
 		this.#fetch = option.fetch ?? fetch;
 	}
 

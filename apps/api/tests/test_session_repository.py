@@ -73,6 +73,57 @@ def test_get_session_by_token_hash_returns_session(
     asyncio.run(run_test())
 
 
+def test_get_active_session_by_token_hash_filters_revoked_and_expired(
+    db_session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    async def run_test() -> None:
+        async with db_session_factory() as session:
+            user = User(
+                email="user@example.com",
+                display_name="User",
+                password_hash="hashed-password",
+            )
+            session.add(user)
+            await session.flush()
+
+            now = datetime.now(timezone.utc)
+            session.add_all(
+                [
+                    Session(
+                        user_id=user.id,
+                        token_hash="token-active",
+                        expires_at=now + timedelta(days=7),
+                    ),
+                    Session(
+                        user_id=user.id,
+                        token_hash="token-expired",
+                        expires_at=now - timedelta(seconds=1),
+                    ),
+                    Session(
+                        user_id=user.id,
+                        token_hash="token-revoked",
+                        expires_at=now + timedelta(days=7),
+                        revoked_at=now,
+                    ),
+                ]
+            )
+            await session.commit()
+
+        async with db_session_factory() as session:
+            repository = SessionRepository(session)
+
+            active = await repository.get_active_session_by_token_hash("token-active")
+            expired = await repository.get_active_session_by_token_hash("token-expired")
+            revoked = await repository.get_active_session_by_token_hash("token-revoked")
+
+            assert active is not None
+            assert active.token_hash == "token-active"
+            assert expired is None
+            assert revoked is None
+
+    asyncio.run(run_test())
+
+
 def test_delete_session_removes_only_target_session(
     db_session_factory: async_sessionmaker[AsyncSession],
 ) -> None:
@@ -107,6 +158,43 @@ def test_delete_session_removes_only_target_session(
             remaining_ids = await session.scalars(select(Session.id).order_by(Session.id))
 
             assert list(remaining_ids) == [second.id]
+
+    asyncio.run(run_test())
+
+
+def test_revoke_session_by_token_hash_marks_session_as_revoked(
+    db_session_factory: async_sessionmaker[AsyncSession],
+) -> None:
+    async def run_test() -> None:
+        async with db_session_factory() as session:
+            user = User(
+                email="user@example.com",
+                display_name="User",
+                password_hash="hashed-password",
+            )
+            session.add(user)
+            await session.flush()
+
+            seeded = Session(
+                user_id=user.id,
+                token_hash="token-hash-1",
+                expires_at=datetime.now(timezone.utc) + timedelta(days=7),
+            )
+            session.add(seeded)
+            await session.flush()
+
+            revoked_at = datetime.now(timezone.utc)
+            repository = SessionRepository(session)
+            await repository.revoke_session_by_token_hash("token-hash-1", revoked_at)
+            await session.commit()
+
+        async with db_session_factory() as session:
+            persisted = await session.scalar(
+                select(Session).where(Session.token_hash == "token-hash-1")
+            )
+
+            assert persisted is not None
+            assert persisted.revoked_at is not None
 
     asyncio.run(run_test())
 
