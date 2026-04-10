@@ -13,12 +13,14 @@ type RequestOptions = {
 };
 
 export class ApiError extends Error {
-	status: number;
+	readonly status: number;
+	readonly payload: unknown;
 
-	constructor(message: string, status: number) {
+	constructor(message: string, status: number, payload: unknown) {
 		super(message);
 		this.name = 'ApiError';
 		this.status = status;
+		this.payload = payload;
 	}
 }
 
@@ -34,9 +36,7 @@ export class ApiClient {
 	public async request<T>(path: string, option: RequestOptions = {}): Promise<T> {
 		const req = this.createRequest(option);
 		const res = await this.#fetch(`${this.#baseUrl}${path}`, req);
-		if (!res.ok) {
-			await this.handleError(res);
-		}
+		if (!res.ok) await this.handleError(res);
 		return (await this.handleResponse(res)) as T;
 	}
 
@@ -60,18 +60,26 @@ export class ApiClient {
 	}
 
 	private async handleError(res: Response): Promise<never> {
-		throw new ApiError(await res.text(), res.status);
+		const payload = await this.getPayloadByRes(res);
+		const message = this.getErrorMessageByPayload(payload);
+		throw new ApiError(message, res.status, payload);
 	}
 
-	private async handleResponse<T>(res: Response): Promise<T> {
-		if (res.status === 204) {
-			return undefined as T;
-		}
+	private getErrorMessageByPayload(payload: unknown): string {
+		return typeof payload === 'object' && payload !== null && 'detail' in payload
+			? String(payload.detail)
+			: 'API request failed';
+	}
 
+	private async handleResponse(res: Response): Promise<unknown> {
+		if (res.status === 204) return undefined;
+		return await this.getPayloadByRes(res);
+	}
+
+	private async getPayloadByRes(res: Response): Promise<unknown> {
 		const contentType = res.headers.get('content-type') ?? '';
 		const isJson = contentType.includes('application/json');
-		const payload = isJson ? await res.json() : await res.text();
-		return payload as T;
+		return isJson ? await res.json() : await res.text();
 	}
 
 	private createRequest(option: RequestOptions): RequestInit {
