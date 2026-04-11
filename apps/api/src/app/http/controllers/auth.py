@@ -2,23 +2,18 @@ from typing import Annotated
 
 from litestar import Controller, Request, Response, get, post
 from litestar.datastructures.cookie import Cookie
-from litestar.exceptions import ClientException, NotAuthorizedException
 from litestar.params import Dependency
 from litestar.status_codes import (
     HTTP_200_OK,
     HTTP_201_CREATED,
     HTTP_204_NO_CONTENT,
-    HTTP_409_CONFLICT,
 )
 
 from app.domain import User
 from app.http.schemas.auth import AuthResponse, LoginRequest, RegisterRequest, UserRead
+from app.http.service_exception_mapper import service_exception_mapper
 from app.services.auth_service import AuthServiceContract
-from app.services.exceptions import (
-    InactiveUserError,
-    InvalidCredentialsError,
-    UserAlreadyExistsError,
-)
+from app.services.exceptions import ServiceError
 
 
 class AuthController(Controller):
@@ -39,8 +34,8 @@ class AuthController(Controller):
                 display_name=data.display_name,
                 password=data.password,
             )
-        except UserAlreadyExistsError:
-            raise ClientException("user already exists", status_code=HTTP_409_CONFLICT)
+        except ServiceError as error:
+            service_exception_mapper.raise_http_exception(error)
 
         return Response(
             AuthResponse(user=UserRead.validate_value(result.user)),
@@ -59,10 +54,8 @@ class AuthController(Controller):
                 email=str(data.email),
                 password=data.password,
             )
-        except InvalidCredentialsError:
-            raise NotAuthorizedException("invalid credentials")
-        except InactiveUserError:
-            raise NotAuthorizedException("user is inactive")
+        except ServiceError as error:
+            service_exception_mapper.raise_http_exception(error)
 
         return Response(
             AuthResponse(user=UserRead.validate_value(result.user)),

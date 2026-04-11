@@ -57,7 +57,7 @@ class UserRepository(UserRepositoryContract):
         self._db_session.add(user)
         try:
             await self._db_session.flush()
-        except IntegrityError:
-            raise UserAlreadyExistsError()
+        except IntegrityError as error:
+            raise UserAlreadyExistsError() from error
 
         return user

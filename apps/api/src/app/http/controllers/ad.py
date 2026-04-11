@@ -8,8 +8,9 @@ from litestar.status_codes import HTTP_201_CREATED
 from app.domain import User
 from app.http.schemas import AdRead, AdsPageRead
 from app.http.schemas.ad import AdCreate, AdCreated
+from app.http.service_exception_mapper import service_exception_mapper
 from app.services.ad_service import AdServiceContract
-from app.services.exceptions import CategoryNotFoundError
+from app.services.exceptions import ServiceError
 
 
 class AdsController(Controller):
@@ -59,7 +60,7 @@ class AdsController(Controller):
                 category_id=data.category_id,
                 owner_id=required_current_user.id,
             )
-        except CategoryNotFoundError:
-            raise NotFoundException("category not found")
+        except ServiceError as error:
+            service_exception_mapper.raise_http_exception(error)
 
         return AdCreated(status="ok", id=id)
