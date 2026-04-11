@@ -109,6 +109,14 @@ Before non-trivial changes:
 - check for existing patterns
 - consult `reference/` for migrated functionality
 
+Plan and execute work one concrete step at a time.
+
+Rules:
+- choose the next action that can be completed here and now
+- do not expand into multi-step future planning unless explicitly requested
+- optimize for immediate progress on the current concrete step
+- defer later-step design decisions until they become the next active task
+
 When editing:
 - make the smallest correct change
 - avoid incidental refactors

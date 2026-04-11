@@ -7,6 +7,8 @@ class CategoryNotFoundError(ServiceError):
 
 
 class UserAlreadyExistsError(ServiceError):
+    # def __init__(self, email: str) -> None:
+    #     self.email = email
     pass
 
 

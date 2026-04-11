@@ -1,1 +1,124 @@
 @import 'tailwindcss';
+
+:root {
+	--bg: #f4f6fb;
+	--surface: #ffffff;
+	--surface-muted: #eef2f7;
+	--border: #d9e0ea;
+	--text: #182131;
+	--text-muted: #5e6a7d;
+	--primary: #0f766e;
+	--primary-hover: #115e59;
+	--radius: 8px;
+	--shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
+}
+
+html,
+body {
+	min-height: 100%;
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font-family:
+		Inter,
+		ui-sans-serif,
+		system-ui,
+		-apple-system,
+		BlinkMacSystemFont,
+		'Segoe UI',
+		sans-serif;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.app-shell {
+	min-height: 100vh;
+}
+
+.app-shell__main {
+	padding: 2rem 0 3rem;
+}
+
+.app-header {
+	border-bottom: 1px solid var(--border);
+	background: var(--surface);
+	box-shadow: var(--shadow-sm);
+}
+
+.app-header__inner {
+	width: 100%;
+	max-width: 72rem;
+	margin: 0 auto;
+	padding: 0.875rem 1rem;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.app-header__brand-group {
+	display: flex;
+	align-items: center;
+	gap: 1.5rem;
+}
+
+.app-header__brand {
+	font-size: 1.125rem;
+	font-weight: 700;
+}
+
+.app-header__nav {
+	display: none;
+	gap: 1rem;
+	color: var(--text-muted);
+	font-size: 0.95rem;
+}
+
+.app-header__actions {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+}
+
+.app-header__user {
+	color: var(--text-muted);
+	font-size: 0.95rem;
+}
+
+.app-header__action {
+	border-radius: var(--radius);
+	padding: 0.625rem 0.875rem;
+	font-size: 0.95rem;
+	line-height: 1;
+}
+
+.app-header__action--ghost {
+	color: var(--text-muted);
+}
+
+.app-header__action--secondary {
+	border: 1px solid var(--border);
+	background: var(--surface);
+}
+
+.app-header__action--primary {
+	background: var(--primary);
+	color: white;
+}
+
+.app-header__action--primary:hover {
+	background: var(--primary-hover);
+}
+
+@media (min-width: 640px) {
+	.app-header__inner {
+		padding: 1rem 1.5rem;
+	}
+
+	.app-header__nav {
+		display: flex;
+	}
+}
