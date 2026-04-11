@@ -1,31 +1,13 @@
+import type { components } from '@pets/api-types';
+
 import { ApiClient } from './client';
 
-export type UserRole = 'user' | 'staff';
+export type UserRole = components['schemas']['UserRole'];
+export type CurrentUser = components['schemas']['UserRead'];
+export type RegisterInput = components['schemas']['RegisterRequest'];
+export type LoginInput = components['schemas']['LoginRequest'];
 
-export interface CurrentUser {
-	id: number;
-	email: string;
-	display_name: string;
-	role: UserRole;
-	is_active: boolean;
-	created_at: string;
-	updated_at: string;
-}
-
-export interface RegisterInput {
-	email: string;
-	display_name: string;
-	password: string;
-}
-
-export interface LoginInput {
-	email: string;
-	password: string;
-}
-
-interface AuthResponse {
-	user: CurrentUser;
-}
+type AuthResponse = components['schemas']['AuthResponse'];
 
 export class AuthApi {
 	readonly #client: ApiClient;

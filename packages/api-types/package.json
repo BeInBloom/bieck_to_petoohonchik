@@ -3,7 +3,14 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "exports": {
+    ".": "./src/generated.ts"
+  },
+  "types": "./src/generated.ts",
   "scripts": {
-    "generate": "openapi-typescript http://127.0.0.1:8000/schema/openapi.json -o src/generated.ts"
+    "generate": "openapi-typescript openapi.json -o src/generated.ts"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.10.1"
   }
 }
