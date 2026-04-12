@@ -80,7 +80,7 @@ class AuthController(Controller):
             cookies=[self._build_logout_cookie()],
         )
 
-    @get("/me")
+    @get("/me", status_code=HTTP_200_OK)
     async def me(
         self,
         required_current_user: Annotated[User, Dependency(skip_validation=True)],

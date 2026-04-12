@@ -3,6 +3,7 @@ from typing import Annotated
 from litestar import Controller, get
 from litestar.exceptions import NotFoundException
 from litestar.params import Dependency
+from litestar.status_codes import HTTP_200_OK
 
 from app.http.schemas import CategoryRead
 from app.services.category_service import CategoryServiceContract
@@ -11,7 +12,7 @@ from app.services.category_service import CategoryServiceContract
 class CategoriesController(Controller):
     path = "/categories"
 
-    @get()
+    @get(status_code=HTTP_200_OK)
     async def list_categories(
         self,
         category_service: Annotated[CategoryServiceContract, Dependency(skip_validation=True)],
@@ -19,7 +20,7 @@ class CategoriesController(Controller):
         categories = await category_service.list_categories()
         return CategoryRead.validate_list(categories)
 
-    @get("/{slug:str}")
+    @get("/{slug:str}", status_code=HTTP_200_OK)
     async def get_category(
         self,
         slug: str,

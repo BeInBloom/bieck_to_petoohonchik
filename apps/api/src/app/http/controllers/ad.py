@@ -3,7 +3,7 @@ from typing import Annotated
 from litestar import Controller, get, post
 from litestar.exceptions import NotFoundException
 from litestar.params import Dependency, Parameter
-from litestar.status_codes import HTTP_201_CREATED
+from litestar.status_codes import HTTP_200_OK, HTTP_201_CREATED
 
 from app.domain import User
 from app.http.schemas import AdRead, AdsPageRead
@@ -16,7 +16,7 @@ from app.services.exceptions import ServiceError
 class AdsController(Controller):
     path = "/ads"
 
-    @get()
+    @get(status_code=HTTP_200_OK)
     async def list_ads(
         self,
         ad_service: Annotated[AdServiceContract, Dependency(skip_validation=True)],
@@ -32,7 +32,7 @@ class AdsController(Controller):
             total=pages.total,
         )
 
-    @get("/{id:int}")
+    @get("/{id:int}", status_code=HTTP_200_OK)
     async def get_ad(
         self,
         id: int,
